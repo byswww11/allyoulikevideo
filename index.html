@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>Allyoulike Video - Gallery Video Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <style>
+        /* CSS GLOBAL YANG BUKAN HEADER DAN FOOTER */
+        * { box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        #header-placeholder{
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+        }
+
+        .main-content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .video-grid {
+                gap: 12px;
+            }
+        }
+        
+        .mobile-search-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #0a0a0aef;
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            z-index: 10000;
+            border-bottom: 2px solid #ff3b6f;
+        }
+        .mobile-search-container {
+            display: flex;
+            align-items: center;
+            background: #1e1e1e;
+            border-radius: 60px;
+            padding: 4px 16px;
+            border: 1px solid #444;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            gap: 8px;
+        }
+        .mobile-search-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 14px 8px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        .mobile-search-container button {
+            background: transparent;
+            border: none;
+            color: #ff3b6f;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px;
+        }
+        #closeSearchBtn {
+            color: #aaa;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 20px 0 24px 0;
+            border-left: 5px solid #ff3b6f;
+            padding-left: 20px;
+        }
+        .section-icon {
+            font-size: 32px;
+            filter: drop-shadow(0 0 4px #ff3b6f);
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(145deg, #fff, #ffbc6e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        
+        .video-item {
+            background: #121212;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .video-item:hover {
+            transform: translateY(-8px);
+            border-color: #ff3b6f;
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.6);
+        }
+        .video-thumb-container {
+            position: relative;
+            background: #0f0f0f;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+        }
+        .video-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .video-item:hover .video-thumb {
+            transform: scale(1.05);
+        }
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            color: white;
+            font-size: 26px;
+            transition: 0.2s;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .video-item:hover .play-overlay {
+            background: #ff3b6f;
+            transform: translate(-50%, -50%) scale(1.05);
+            border-color: white;
+        }
+        .video-title {
+            padding: 12px 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #eee;
+            text-decoration: none;
+            background: #121212;
+            letter-spacing: -0.2px;
+        }
+        
+        .badge-new {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ff3b6f;
+            padding: 4px 10px;
+            font-size: 10px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 8px black;
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 40px 0 30px;
+            flex-wrap: wrap;
+        }
+        .pagination-btn, .pagination-arrow {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .pagination-btn.active {
+            background: #ff3b6f;
+            border-color: #ff3b6f;
+            color: white;
+        }
+        .pagination-arrow.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-dots { color: #aaa; padding: 0 6px; }
+        
+        @media (max-width: 768px) {
+            .main-content-container { padding: 0 16px; }
+            .section-title { font-size: 22px; }
+            .section-icon { font-size: 26px; }
+        }
+        
+        .no-data-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            background: #101010;
+            border-radius: 32px;
+            color: #aaa;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<div class="mobile-search-overlay" id="mobileSearchOverlay">
+    <div class="mobile-search-container">
+        <input type="text" id="searchInputMobile" placeholder="Search videos, titles..." autocomplete="off">
+        <button id="searchBtnMobile"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button id="closeSearchBtn"><i class="fa-solid fa-times"></i></button>
+    </div>
+</div>
+
+<!-- Top Banner -->
+<div id="topbanner-container"></div>
+
+<div class="main-content-container">
+    <div class="section-header">
+        <i class="fa-solid fa-fire-flame-curved section-icon" style="color: #ff8c5a;"></i>
+        <h2 class="section-title">Recommended</h2>
+    </div>
+    <div id="featured-grid" class="video-grid"></div>
+
+    <div id="search-info-container"></div>
+    
+    <!-- Middle Banner -->
+    <div id="middlebanner-container"></div>
+    
+    <div class="section-header">
+        <i class="fa-regular fa-circle-play section-icon" style="color: #ff3b6f;"></i>
+        <h2 class="section-title" id="newUploadsTitle">New Uploads</h2>
+    </div>
+    <div id="new-videos-grid" class="video-grid"></div>
+    
+    <div id="pagination" class="pagination-container"></div>
+    
+    <!-- Bottom Banner -->
+    <div id="bottombanner-container"></div>
+</div>
+
+<div id="footer-placeholder"></div>
+
+<script>
+    // Fungsi untuk memuat konten dari file eksternal ke dalam container
+    function loadComponent(containerId, fileUrl) {
+        fetch(fileUrl + '?t=' + Date.now())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = data;
+                
+                // Jika yang dimuat adalah file banner, jalankan script iklan yang ada di dalamnya
+                if (fileUrl === 'topbanner.html' || fileUrl === 'middlebanner.html' || fileUrl === 'bottombanner.html') {
+                    const scripts = container.querySelectorAll('script');
+                    scripts.forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                        } else {
+                            newScript.textContent = oldScript.textContent;
+                        }
+                        document.body.appendChild(newScript);
+                        if (oldScript.parentNode) oldScript.remove();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error(`Error loading ${fileUrl}:`, error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<div style="text-align:center; padding:10px; color:#ff3b6f;">Failed to load banner. Please check network.</div>';
+                }
+            });
+    }
+
+    // Memuat Top Banner, Middle Banner, Bottom Banner, Header, dan Footer
+    loadComponent('topbanner-container', 'topbanner.html');
+    loadComponent('middlebanner-container', 'middlebanner.html');
+    loadComponent('bottombanner-container', 'bottombanner.html');
+    loadComponent('header-placeholder', 'header.html');
+    loadComponent('footer-placeholder', 'footer.html');
+</script>
+<script src="script.js"></script>
+<script src="https://rhubarbambassadorweep.com/51/51/18/515118858cb0e87294665da7b1f2d1c0.js"></script>
+
+</body>
+</html>
